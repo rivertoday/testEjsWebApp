@@ -9,7 +9,7 @@
 拷贝到本地后，直接npm install即可自动安装相关modules
 
 命令行调试启动  
-DEBUG=testejswebapp:* npm start
+`DEBUG=testejswebapp:* npm start`  
 
 ### 关于启动方式
 也可以用pm2

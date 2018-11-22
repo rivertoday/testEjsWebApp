@@ -5,7 +5,10 @@ var router = express.Router();
 
 /* GET login page. */
 router.get('/', function (req, res, next) {
-    res.render('login', {title: 'Chinese Clinical Investigation Center'});
+	res.clearCookie('userinfo');
+	res.clearCookie('usertoken');
+	res.clearCookie('prj001token');
+	res.render('login', {title: 'Chinese Clinical Investigation Center'});
 });
 
 /* GET projects list page. */

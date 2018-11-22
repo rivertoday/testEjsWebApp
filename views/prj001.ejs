@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/public/stylesheets/style.css'/>
+    <link rel='stylesheet' href='/public/stylesheets/bootstrap.min.css'/>
+    <script>src="/public/javascripts/bootstrap.min.js"</script>
+</head>
+<body>
+<h1>流调项目一案例数据</h1>
+
+<table class="table table-striped" id="myarchivelist">
+    <!--<caption>调查数据</caption>-->
+    <thead>
+    <tr>
+        <th>姓名</th>
+        <th>数据链接</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% archives.forEach(function(archive){ %>
+    <tr>
+        <td><%= archive.name %></td>
+        <td><%= archive.url %></td>
+    </tr>
+    <% }) %>
+    </tbody>
+</table>
+</body>
+</html>

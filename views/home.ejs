@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/public/stylesheets/style.css'/>
+    <link rel='stylesheet' href='/public/stylesheets/bootstrap.min.css'/>
+    <script>src="/public/javascripts/bootstrap.min.js"</script>
+</head>
+<body>
+<h1>临床流调各项目入口</h1>
+
+<ul class="nav nav-pills nav-stacked" style="max-width: 260px;">
+    <% prjs.forEach(function(prj){ %>
+        <% if (prj.status == "进行中") { %>
+        <li class="active">
+            <a href="<%= prj.linkurl %>"><%= prj.name %><span class="badge pull-right"><%= prj.status %></span></a>
+        </li>
+        <% }else { %>
+        <li>
+            <a href="<%= prj.linkurl %>"><%= prj.name %><span class="badge pull-right"><%= prj.status %></span></a>
+        </li>
+        <% } %>
+    <% }) %>
+</ul>
+</body>
+</html>

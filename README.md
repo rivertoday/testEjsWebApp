@@ -14,6 +14,6 @@ DEBUG=testejswebapp:* npm start
 ### 关于启动方式
 也可以用pm2
 
-`npm install pm2 -g`
-`cd yourprojectfolder`
-`pm2 start ./bin/www`
+`npm install pm2 -g`  
+`cd yourprojectfolder`  
+`pm2 start ./bin/www`  

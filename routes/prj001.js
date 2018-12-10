@@ -1,7 +1,11 @@
 var request = require("request");
 var express = require('express');
+var mutipart= require('connect-multiparty');
+var fs = require("fs");
+
 var myconst = require("./const");
 var router = express.Router();
+var mutipartMiddeware = mutipart();
 
 /* GET prj001 home page. */
 router.get('/', function (req, res, next) {
@@ -92,6 +96,50 @@ router.get('/', function (req, res, next) {
             res.redirect("login");
         }
     }
+
+});
+
+router.post('/file_upload', mutipartMiddeware, function (req, res, next) {
+    console.log(req.files);
+    /*0|cc       | { image:
+            0|cc       |    { fieldName: 'image',
+                0|cc       |      originalFilename: '07排卵障碍性异常子宫出血问卷_20181126.xlsx',
+    0|cc       |      path: '/tmp/XXnBfHzo8n-ed_xy-bnmulGh.xlsx',
+    0|cc       |      headers:
+    0|cc       |       { 'content-disposition': 'form-data; name="image"; filename="07排卵障碍性异常子宫出血问卷_20181126.xlsx"',
+        0|cc       |         'content-type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' },
+    0|cc       |      size: 208063,
+    0|cc       |      name: '07排卵障碍性异常子宫出血问卷_20181126.xlsx',
+    0|cc       |      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' } }*/
+
+    const formData = {
+        // Pass a simple key-value pair
+        name: '测试excel文件',
+        // Pass data via Streams
+        ivfile: fs.createReadStream(req.files.image.path),
+        // Pass owner
+        owner_id: req.cookies.userid.id
+    };
+    var authstring = req.cookies.prj001token.access_token;
+    var options = {
+        url: myconst.apiurl+"prj001/upload/",
+        headers: {
+            'Authorization': 'Bearer ' + authstring
+        },
+        formData: formData
+    };
+
+    request.post(options, function optionalCallback(err, response, body) {
+        if (!err && response.statusCode == 200) {
+            console.log('Upload successful!  Server responded with:', body);
+            //给浏览器返回一个成功提示。
+            res.send('Upload success!');
+        }
+        else {
+            return console.error('upload failed:', err);
+            res.send('Upload failed!');
+        }
+    });
 
 });
 

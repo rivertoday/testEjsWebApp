@@ -5,10 +5,11 @@ var router = express.Router();
 
 /* GET login page. */
 router.get('/', function (req, res, next) {
-	res.clearCookie('userinfo');
-	res.clearCookie('usertoken');
-	res.clearCookie('prj001token');
-	res.render('login', {title: 'Chinese Clinical Investigation Center'});
+    console.log(">>>Clear all cookies");
+    res.clearCookie('userinfo');
+    res.clearCookie('usertoken');
+    res.clearCookie('prj001token');
+    res.render('login', {title: 'Chinese Clinical Investigation Center'});
 });
 
 /* GET projects list page. */
@@ -41,6 +42,10 @@ router.get('/home', function (req, res, next) {
                     if (userobjs.results[i]['email'] == useremail ) {
                         console.log(">>>Found the user! " + userobjs.results[i]['url']);
                         userurl = userobjs.results[i]['url'];
+                        //回写cookie一个用户id，即owner_id
+                        res.cookie("userid", {
+                            "id": userobjs.results[i]['id']
+                        }, {maxAge: 1000 * 60 * 60 * 4, httpOnly: true});//cookie 4小时有效时间
                         break;
                     }
                 }

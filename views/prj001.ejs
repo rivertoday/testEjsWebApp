@@ -6,9 +6,16 @@
     <link rel='stylesheet' href='/public/stylesheets/bootstrap.min.css'/>
     <script>src="/public/javascripts/bootstrap.min.js"</script>
 </head>
-<body>
+
 <h1>流调项目一案例数据</h1>
 
+<h3>Excel模板上传创建案例：</h3>
+<form action="/prj001/file_upload" method="post" enctype="multipart/form-data">
+    <input type="file" name="image" size="50" />
+    <br />
+    <input type="submit" value="提交" />
+</form>
+<br />
 <table class="table table-striped" id="myarchivelist">
     <!--<caption>调查数据</caption>-->
     <thead>

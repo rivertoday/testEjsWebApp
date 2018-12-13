@@ -4,19 +4,23 @@
     <title><%= title %></title>
     <link rel='stylesheet' href='/public/stylesheets/style.css'/>
     <link rel='stylesheet' href='/public/stylesheets/bootstrap.min.css'/>
-    <script>src="/public/javascripts/bootstrap.min.js"</script>
+    <script src="/public/javascripts/jquery.min.js"></script>
+    <script src="/public/javascripts/bootstrap.min.js"></script>
 </head>
-
+<body>
 <h1>流调项目一案例数据</h1>
 
 <h3>Excel模板上传创建案例：</h3>
+
 <form action="/prj001/file_upload" method="post" enctype="multipart/form-data">
-    <input type="file" name="image" size="50" />
-    <br />
-    <input type="submit" value="提交" />
+    <input type="file" name="image" size="50"/>
+    <br/>
+    <input type="submit" value="提交"/>
 </form>
-<br />
-<table class="table table-striped" id="myarchivelist">
+<br/>
+
+<% if (archives) { %>
+<table class="table table-striped">
     <!--<caption>调查数据</caption>-->
     <thead>
     <tr>
@@ -24,7 +28,7 @@
         <th>数据链接</th>
     </tr>
     </thead>
-    <tbody>
+    <tbody id="myarchiveslist">
     <% archives.forEach(function(archive){ %>
     <tr>
         <td><%= archive.name %></td>
@@ -33,5 +37,36 @@
     <% }) %>
     </tbody>
 </table>
+
+<nav aria-label="Page navigation">
+    <ul class="pagination">
+        <% if (previouspage) { %>
+        <li>
+            <a href="?page=<%= previouspage %>" arial-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        <% } %>
+
+        <% for (var pg=1;pg<=totalpagenumber;pg++){ %>
+        <% if (curpage == pg) { %>
+        <li class="active"><a href="?page=<%= pg %>"><%= pg %></a></li>
+        <% }else {%>
+        <li><a href="?page=<%= pg %>"><%= pg %></a></li>
+        <% } %>
+        <% } %>
+
+        <% if (nextpage) { %>
+        <li>
+            <a href="?page=<%= nextpage %>" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        <% } %>
+    </ul>
+</nav>
+<% }else { %>
+<div class="alert alert-warning">目前尚没有数据！</div>
+<% } %>
 </body>
 </html>

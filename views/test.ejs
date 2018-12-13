@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/public/stylesheets/style.css'/>
+    <script type="text/javascript" src="/public/javascripts/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="/public/javascripts/jquery.tmpl.js"></script>
+    <script type="text/html" id="template1">
+            <tr>
+                <td>${ID} </td>
+                <td>${Name} </td>
+            </tr>
+    </script>
+    <script type="text/javascript">
+        $(function () {
+            var users = [
+                {
+                    ID: 'think8848',
+                    Name: 'Joseph Chan',
+                    Langs: [
+                        'Chinese',
+                        'English'
+                    ]
+                },
+                {
+                    ID: 'aCloud',
+                    Name: 'Mary Cheung',
+                    Langs: [
+                        'Chinese',
+                        'French'
+                    ]
+                }
+            ];
+            $('#template1').tmpl(users).appendTo('#table1')
+        });
+    </script>
+</head>
+<body>
+<table>
+    <tbody id="table1">
+    </tbody>
+</table>
+</body>
+</html>

@@ -12,6 +12,13 @@ router.get('/', function (req, res, next) {
     res.render('login', {title: 'Chinese Clinical Investigation Center'});
 });
 
+/*
+test template
+ */
+router.get('/test', function(req, res, next) {
+    res.render('test', {title: 'Chinese Clinical Investigation Center'});
+});
+
 /* GET projects list page. */
 router.get('/home', function (req, res, next) {
     console.log(">>>Visting home page!");

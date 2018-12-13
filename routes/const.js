@@ -4,8 +4,11 @@ var client_secret = "REmyfsiy3egeWWy3JF631S2kURtz9QbvdWnhptSx6011I9e1fyttmvZ9r9P
 var scope_prj001 = "prj001";
 var scope_users = "users";
 
+var NUMER_PER_PAGE = 10;// MUST be consistent with the api definition
+
 module.exports.apiurl = apiurl;
 module.exports.client_id = client_id;
 module.exports.client_secret = client_secret;
 module.exports.scope_prj001 = scope_prj001;
 module.exports.scope_users = scope_users;
+module.exports.NUMER_PER_PAGE = NUMER_PER_PAGE;

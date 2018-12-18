@@ -1,6 +1,6 @@
 var request = require("request");
 var express = require('express');
-var mutipart= require('connect-multiparty');
+var mutipart = require('connect-multiparty');
 var fs = require("fs");
 var math = require("mathjs");
 var url = require("url");
@@ -18,7 +18,7 @@ router.get('/', function (req, res, next) {
         //直接发起数据请求，获取prj001项目指定页面的案例
         console.log(">>> req url: " + req.url);
         var params = url.parse(req.url, true).query;
-        console.log(">>> req url params: " + params["page"]);
+        console.log(">>> req url params: " + params["page"] + ", " + params["keyword"]);
         var workurl = "";
         if (params["page"] == undefined) {
             workurl = myconst.apiurl + "prj001/geninfo/";
@@ -26,9 +26,20 @@ router.get('/', function (req, res, next) {
         else {
             workurl = myconst.apiurl + "prj001/geninfo/?page=" + params["page"];
         }
+        if (params["keyword"] == undefined) {
+            workurl = workurl;
+        } else {
+            if (params["page"] == undefined) {
+                workurl = workurl + "?search=" + params["keyword"];
+            }
+            else {
+                workurl = workurl + "&search=" + params["keyword"];
+            }
+        }
 
         var authstring = req.cookies.prj001token.access_token;
-        console.log(">>> prj001 access_token: " + authstring);
+        console.log(">>> current prj001 access_token: " + authstring);
+        console.log(">>> current built api url: " + workurl);
 
         var options = {
             url: workurl,
@@ -40,34 +51,63 @@ router.get('/', function (req, res, next) {
         request(options, function (error, response, body) {
             if (!error && response.statusCode == 200) {
                 var archiveobjs = JSON.parse(body);
-                var totalNumber = archiveobjs.count;
-                var totalPageNumber = math.ceil(totalNumber/myconst.NUMER_PER_PAGE);
+                //var totalNumber = archiveobjs.count;
+                var totalPageNumber = archiveobjs.total_pages; //math.ceil(totalNumber/myconst.NUMER_PER_PAGE);
                 var curPageNumber = 1;
                 if (params["page"] == undefined) {
                     curPageNumber = 1;
-                }else {
+                } else {
                     curPageNumber = params["page"];
+                    curPageNumber = parseInt(curPageNumber);
                 }
-                var previousPage = "";
-                if (archiveobjs.previous) {
+                var previousPage = parseInt(curPageNumber) - 1;
+                if (previousPage < 1) {
+                    previousPage = 1;
+                }
+                /*if (archiveobjs.previous) {
                     var iIndex = archiveobjs.previous.search("=");
                     previousPage = archiveobjs.previous.substring(iIndex);
+                }*/
+                var nextPage = parseInt(curPageNumber) + 1;
+                if (nextPage > totalPageNumber) {
+                    nextPage = totalPageNumber;
                 }
-                var nextPage = "";
-                if (archiveobjs.next) {
+                /*if (archiveobjs.next) {
                     var jIndex = archiveobjs.next.search("=");
                     nextPage = archiveobjs.next.substring(jIndex);
+                }*/
+                var i = 0, len = archiveobjs.results.length;
+                for (; i < len; i++) {
+                    var tmpobj = archiveobjs.results[i];
+                    console.log(">>> current retrieving results: " + tmpobj["name"]);
                 }
-                res.render('prj001', {title: '流调项目-排卵障碍性异常子宫出血',
-                    archives: archiveobjs.results,
-                    totalpagenumber: totalPageNumber,
-                    curpage: curPageNumber,
-                    previouspage: previousPage,
-                    nextpage: nextPage
-                });
+                var retschname = "";
+                if (params["keyword"] == undefined) {
+                    retschname = "患者姓名";
+                    res.render('prj001', {
+                        title: '流调项目-排卵障碍性异常子宫出血',
+                        archives: archiveobjs.results,
+                        totalpagenumber: totalPageNumber,
+                        curpage: curPageNumber,
+                        previouspage: previousPage,
+                        nextpage: nextPage,
+                        searchname: retschname
+                    });
+                } else {
+                    retschname = params["keyword"];
+                    res.json({
+                        title: '流调项目-排卵障碍性异常子宫出血',
+                        archives: archiveobjs.results,
+                        totalpagenumber: totalPageNumber,
+                        curpage: curPageNumber,
+                        previouspage: previousPage,
+                        nextpage: nextPage,
+                        searchname: retschname
+                    });
+                }
             }
             else {
-                console.log(">>>Getting archives met unknown error. "+err.error_description);
+                console.log(">>>Getting archives met unknown error. " + err.error_description);
                 res.redirect("login");
             }
         });
@@ -98,10 +138,29 @@ router.get('/', function (req, res, next) {
                         "expires_in": obj.expires_in
                     }, {maxAge: 1000 * 60 * 60 * 4, httpOnly: true});//cookie 4小时有效时间
 
-                    //进一步发起数据请求，获取所有prj001项目的案例
-                    workurl = myconst.apiurl + "prj001/geninfo/";
+                    //进一步发起数据请求，获取prj001项目满足搜索和分页条件的案例
+                    var params = url.parse(req.url, true).query;
+                    console.log(">>> req url params: " + params["page"] + ", " + params["keyword"]);
+                    var workurl = "";
+                    if (params["page"] == undefined) {
+                        workurl = myconst.apiurl + "prj001/geninfo/";
+                    }
+                    else {
+                        workurl = myconst.apiurl + "prj001/geninfo/?page=" + params["page"];
+                    }
+                    if (params["keyword"] == undefined) {
+                        workurl = workurl;
+                    } else {
+                        if (params["page"] == undefined) {
+                            workurl = workurl + "?search=" + params["keyword"];
+                        }
+                        else {
+                            workurl = workurl + "&search=" + params["keyword"];
+                        }
+                    }
                     var authstring = obj.access_token;
                     console.log(">>> prj001 access_token: " + authstring);
+                    console.log(">>> current built api url: " + workurl);
 
                     var options = {
                         url: workurl,
@@ -113,35 +172,69 @@ router.get('/', function (req, res, next) {
                     request(options, function (error, response, body) {
                         if (!error && response.statusCode == 200) {
                             var archiveobjs = JSON.parse(body);
-                            var totalNumber = archiveobjs.count;
-                            var totalPageNumber = math.ceil(totalNumber/myconst.NUMER_PER_PAGE);
+                            //var totalNumber = archiveobjs.count;
+                            var totalPageNumber = archiveobjs.total_pages; //math.ceil(totalNumber/myconst.NUMER_PER_PAGE);
                             var curPageNumber = 1;
-                            var previousPage = "";
-                            if (archiveobjs.previous) {
+                            if (params["page"] == undefined) {
+                                curPageNumber = 1;
+                            } else {
+                                curPageNumber = params["page"];
+                                curPageNumber = parseInt(curPageNumber);
+                            }
+                            var previousPage = parseInt(curPageNumber) - 1;
+                            if (previousPage < 1) {
+                                previousPage = 1;
+                            }
+                            /*if (archiveobjs.previous) {
                                 var iIndex = archiveobjs.previous.search("=");
                                 previousPage = archiveobjs.previous.substring(iIndex);
+                            }*/
+                            var nextPage = parseInt(curPageNumber) + 1;
+                            if (nextPage > totalPageNumber) {
+                                nextPage = totalPageNumber;
                             }
-                            var nextPage = "";
-                            if (archiveobjs.next) {
+                            /*if (archiveobjs.next) {
                                 var jIndex = archiveobjs.next.search("=");
                                 nextPage = archiveobjs.next.substring(jIndex);
+                            }*/
+                            var i = 0, len = archiveobjs.results.length;
+                            for (; i < len; i++) {
+                                var tmpobj = archiveobjs.results[i];
+                                console.log(">>> retrieving results: " + tmpobj["name"]);
                             }
-                            res.render('prj001', {title: '流调项目-排卵障碍性异常子宫出血',
-                                archives: archiveobjs.results,
-                                totalpagenumber: totalPageNumber,
-                                curpage: curPageNumber,
-                                previouspage: previousPage,
-                                nextpage: nextPage
-                            });
+                            var retschname = "";
+                            if (params["keyword"] == undefined) {
+                                retschname = "患者姓名";
+                                res.render('prj001', {
+                                    title: '流调项目-排卵障碍性异常子宫出血',
+                                    archives: archiveobjs.results,
+                                    totalpagenumber: totalPageNumber,
+                                    curpage: curPageNumber,
+                                    previouspage: previousPage,
+                                    nextpage: nextPage,
+                                    searchname: retschname
+                                });
+                            } else {
+                                retschname = params["keyword"];
+                                res.json({
+                                    title: '流调项目-排卵障碍性异常子宫出血',
+                                    archives: archiveobjs.results,
+                                    totalpagenumber: totalPageNumber,
+                                    curpage: curPageNumber,
+                                    previouspage: previousPage,
+                                    nextpage: nextPage,
+                                    searchname: retschname
+                                });
+                            }
                         }
                         else {
-                            console.log(">>>Getting archives met unknown error. "+err.error_description);
+                            console.log(">>>Getting archives met unknown error. " + err.error_description);
                             res.redirect("login");
                         }
                     });
                 }
                 else {
-                    console.log(">>>Invoking access token met unknown error. "+err.error_description);
+                    console.log(">>>Invoking access token met unknown error. " + err.error_description);
                     res.redirect("login");
                 }
             });
@@ -152,6 +245,229 @@ router.get('/', function (req, res, next) {
         }
     }
 
+});
+
+/* Process search request by ajax. */
+router.post('/search', function (req, res, next) {
+    console.log(">>>Processing search request!");
+
+    //如果cookie里面有prj001的access_token，那么可以直接获取该项目案例
+    if (req.cookies.prj001token) {
+        //直接发起数据请求，获取prj001项目指定页面的案例
+        var keyword = req.body.keyword;
+        var page = req.body.page;
+        console.log(">>> req body params: " + page + ", " + keyword);
+        var workurl = "";
+        if (page == null) {
+            workurl = myconst.apiurl + "prj001/geninfo/";
+        }
+        else {
+            workurl = myconst.apiurl + "prj001/geninfo/?page=" + page;
+        }
+        if (keyword == null) {
+            workurl = workurl;
+        } else {
+            if (page == null) {
+                workurl = workurl + "?search=" + keyword;
+            }
+            else {
+                workurl = workurl + "&search=" + keyword;
+            }
+        }
+
+        var authstring = req.cookies.prj001token.access_token;
+        console.log(">>> current prj001 access_token: " + authstring);
+        console.log(">>> current built api url: " + workurl);
+
+        var enurl=encodeURI(workurl);
+        var s1url=encodeURI(enurl);
+
+        console.log(">>>s1 encoded api url: " + s1url);
+
+        var s1options = {
+            url: s1url,
+            headers: {
+                'Authorization': 'Bearer ' + authstring
+            }
+        };
+
+        request(s1options, function (error, response, searchbody) {
+            console.log(">>> 我靠，看看怎么回事1: " + searchbody);
+            if (!error && response.statusCode == 200) {
+                var archiveobjs = JSON.parse(searchbody);
+                //var totalNumber = archiveobjs.count;
+                var totalPageNumber = archiveobjs.total_pages; //math.ceil(totalNumber/myconst.NUMER_PER_PAGE);
+                var curPageNumber = 1;
+                if (page == null) {
+                    curPageNumber = 1;
+                } else {
+                    curPageNumber = page;
+                    curPageNumber = parseInt(curPageNumber);
+                }
+                var previousPage = parseInt(curPageNumber) - 1;
+                if (previousPage < 1) {
+                    previousPage = 1;
+                }
+                /*if (archiveobjs.previous) {
+                    var iIndex = archiveobjs.previous.search("=");
+                    previousPage = archiveobjs.previous.substring(iIndex);
+                }*/
+                var nextPage = parseInt(curPageNumber) + 1;
+                if (nextPage > totalPageNumber) {
+                    nextPage = totalPageNumber;
+                }
+                /*if (archiveobjs.next) {
+                    var jIndex = archiveobjs.next.search("=");
+                    nextPage = archiveobjs.next.substring(jIndex);
+                }*/
+                var i = 0, len = archiveobjs.results.length;
+                for (; i < len; i++) {
+                    var tmpobj = archiveobjs.results[i];
+                    console.log(">>> search1 retrieving results: " + tmpobj["name"]);
+                }
+                var retschname = keyword;
+
+                res.json({
+                    title: '流调项目-排卵障碍性异常子宫出血',
+                    archives: archiveobjs.results,
+                    totalpagenumber: totalPageNumber,
+                    curpage: curPageNumber,
+                    previouspage: previousPage,
+                    nextpage: nextPage,
+                    searchname: retschname
+                });
+            }
+            else {
+                console.log(">>>Getting archives met unknown error. " + err.error_description);
+                res.redirect("login");
+            }
+        });
+    }
+    //初次访问该页面,cookie里面没有prj001的access_token，
+    //那么需要先获取一个scope为prj001的access_token
+    else {
+        if (req.cookies.userinfo) {
+            var workurl = myconst.apiurl + "o/token/";
+            var loginData = {
+                "username": req.cookies.userinfo.email,
+                "password": req.cookies.userinfo.password,
+                "grant_type": "password",
+                "scope": myconst.scope_prj001,
+                "client_id": myconst.client_id,
+                "client_secret": myconst.client_secret
+            };
+            console.log(">>>Info used for prj001 authentication: " + JSON.stringify(loginData));
+            request.post({url: workurl, form: loginData}, function (error, response, body) {
+                console.log(">>>Authentication results: " + body);
+                if (!error && response.statusCode == 200) {
+                    var obj = JSON.parse(body); //由JSON字符串转换为JSON对象
+                    // 成功后将token写入Cookie，maxAge为cookie过期时间
+                    res.cookie("prj001token", {
+                        "access_token": obj.access_token,
+                        "refresh_token": obj.refresh_token,
+                        "scope": obj.scope,
+                        "expires_in": obj.expires_in
+                    }, {maxAge: 1000 * 60 * 60 * 4, httpOnly: true});//cookie 4小时有效时间
+
+                    //进一步发起数据请求，获取prj001项目满足搜索和分页条件的案例
+                    var keyword = req.body.keyword;
+                    var page = req.body.page;
+                    console.log(">>> req body params: " + page + ", " + keyword);
+                    var workurl = "";
+                    if (page == null) {
+                        workurl = myconst.apiurl + "prj001/geninfo/";
+                    }
+                    else {
+                        workurl = myconst.apiurl + "prj001/geninfo/?page=" + page;
+                    }
+                    if (keyword == null) {
+                        workurl = workurl;
+                    } else {
+                        if (page == null) {
+                            workurl = workurl + "?search=" + keyword;
+                        }
+                        else {
+                            workurl = workurl + "&search=" + keyword;
+                        }
+                    }
+                    var authstring = obj.access_token;
+                    console.log(">>> prj001 access_token: " + authstring);
+                    console.log(">>> current built api url: " + workurl);
+
+                    var enurl=encodeURI(workurl);
+                    var s2url=encodeURI(enurl);
+
+                    console.log(">>>s2 encoded api url: " + s2url);
+
+                    var s2options = {
+                        url: s2url,
+                        headers: {
+                            'Authorization': 'Bearer ' + authstring
+                        }
+                    };
+
+                    request(s2options, function (error, response, searchbody) {
+                        console.log(">>> 我靠，看看怎么回事2: " + searchbody);
+                        if (!error && response.statusCode == 200) {
+                            var archiveobjs = JSON.parse(searchbody);
+                            //var totalNumber = archiveobjs.count;
+                            var totalPageNumber = archiveobjs.total_pages; //math.ceil(totalNumber/myconst.NUMER_PER_PAGE);
+                            var curPageNumber = 1;
+                            if (page == null) {
+                                curPageNumber = 1;
+                            } else {
+                                curPageNumber = page;
+                                curPageNumber = parseInt(curPageNumber);
+                            }
+                            var previousPage = parseInt(curPageNumber) - 1;
+                            if (previousPage < 1) {
+                                previousPage = 1;
+                            }
+                            /*if (archiveobjs.previous) {
+                                var iIndex = archiveobjs.previous.search("=");
+                                previousPage = archiveobjs.previous.substring(iIndex);
+                            }*/
+                            var nextPage = parseInt(curPageNumber) + 1;
+                            if (nextPage > totalPageNumber) {
+                                nextPage = totalPageNumber;
+                            }
+                            /*if (archiveobjs.next) {
+                                var jIndex = archiveobjs.next.search("=");
+                                nextPage = archiveobjs.next.substring(jIndex);
+                            }*/
+                            var i = 0, len = archiveobjs.results.length;
+                            for (; i < len; i++) {
+                                var tmpobj = archiveobjs.results[i];
+                                console.log(">>> search2 retrieving results: " + tmpobj["name"]);
+                            }
+                            var retschname = keyword;
+                            res.json({
+                                title: '流调项目-排卵障碍性异常子宫出血',
+                                archives: archiveobjs.results,
+                                totalpagenumber: totalPageNumber,
+                                curpage: curPageNumber,
+                                previouspage: previousPage,
+                                nextpage: nextPage,
+                                searchname: retschname
+                            });
+                        }
+                        else {
+                            console.log(">>>Getting archives met unknown error. " + err.error_description);
+                            res.redirect("login");
+                        }
+                    });
+                }
+                else {
+                    console.log(">>>Invoking access token met unknown error. " + err.error_description);
+                    res.redirect("login");
+                }
+            });
+        }
+        else {
+            console.log(">>>Failed to find cookie with user info");
+            res.redirect("login");
+        }
+    }
 });
 
 router.post('/file_upload', mutipartMiddeware, function (req, res, next) {
@@ -177,7 +493,7 @@ router.post('/file_upload', mutipartMiddeware, function (req, res, next) {
     };
     var authstring = req.cookies.prj001token.access_token;
     var options = {
-        url: myconst.apiurl+"prj001/upload/",
+        url: myconst.apiurl + "prj001/upload/",
         headers: {
             'Authorization': 'Bearer ' + authstring
         },

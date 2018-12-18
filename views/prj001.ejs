@@ -45,7 +45,7 @@
         $("#page").empty();
         $("#page").append('<li></li>');
         $("#page li:first").before('<li><a href="#" class="delete_mark" ' +
-            'onclick="go_to_page(this)" current_page_num="1">' + "&laquo;" + '</a></li>');
+            'onclick="go_to_page(this)" current_page_num="'+ Number(workdata.previouspage)+ '">' + "&laquo;" + '</a></li>');
         for(var i=1; i<=Number(workdata.totalpagenumber);i++){
             var page_num = Number(i);
             if(Number(workdata.curpage) == page_num) {   // 说明是当前页，那么进行高亮显示，把class设置为active
@@ -58,7 +58,7 @@
             }
         }
         $("#page li:last").after('<li><a href="#" class="delete_mark" ' +
-            'onclick="go_to_page(this)" current_page_num="'+ Number(workdata.totalpagenumber) +'">' + "&raquo;" + '</a></li>');
+            'onclick="go_to_page(this)" current_page_num="'+ Number(workdata.nextpage) +'">' + "&raquo;" + '</a></li>');
 
     }
 

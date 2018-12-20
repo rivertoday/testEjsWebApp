@@ -38,7 +38,7 @@
         for(var i in workdata["archives"]){
             var per_record = workdata["archives"][i];
             //alert(">>>name: "+per_record["name"]);
-            html_code += '<tr><td>'+per_record.name+'</td><td>'+per_record.url +'</td><tr>';
+            html_code += '<tr><td>'+per_record.name+'</td><td>\'+per_record.age+\'</td><td>'+per_record.url +'</td><tr>';
         }
         $("#myarchiveslist").append(html_code);
 
@@ -107,7 +107,8 @@
     <thead>
     <tr>
         <th>姓名</th>
-        <th>数据链接</th>
+        <th>年龄</th>
+        <th>数据详情链接</th>
         <th>数据操作</th>
     </tr>
     </thead>
@@ -115,16 +116,17 @@
     <% archives.forEach(function(archive){ %>
     <tr>
         <td><%= archive.name %></td>
+        <td><%= archive.age %></td>
         <td><%= archive.url %></td>
         <td>
             <!-- 按钮触发模态框 -->
-            <button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal1"
-                    onclick="basicinfo(this)" genurl="<%=archive.url%>">
+            <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#myModal1"
+                    onclick="basicinfo(this)" genurl="<%=archive.url%>" mensurl="<%=archive.menstruation%>">
                 基本信息
             </button>
-            <button class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal2"
-                    onclick="otherinfo(this)" genurl="<%=archive.url%>">
-                其它信息
+            <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#myModal2"
+                    onclick="mensinfo(this)" genurl="<%=archive.url%>" mensurl="<%=archive.menstruation%>">
+                月经信息
             </button>
         </td>
     </tr>
@@ -145,9 +147,13 @@
             </div>
             <div class="modal-body">
                 <ul>
-                    <li>姓名：<input type="text" name="stuname" id="stuname"/></li>
+                    <li>记录编号：<input type="text" name="serial" id="serial"/></li>
+                    <li>医院：<input type="text" name="hospital" id="hospital"/></li>
+                    <li>专家：<input type="text" name="expert" id="expert"/></li>
+                    <li>姓名：<input type="text" name="patname" id="patname"/></li>
                     <li>年龄：<input type="text" name="age" id="age"/></li>
-                    <li>url：<input type="text" name="geninfo-url" id="geninfo-url"/></li>
+                    <li>民族：<input type="text" name="nation" id="nation"/></li>
+                    <li>url：<input type="text" name="genurl" id="genurl" readonly="true"/></li>
                 </ul>
             </div>
             <div class="modal-footer">
@@ -168,14 +174,16 @@
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
                 </button>
                 <h4 class="modal-title" id="myModalLabel">
-                    其它信息
+                    月经信息
                 </h4>
             </div>
             <div class="modal-body">
                 <ul>
-                    <li>姓名：<input type="text" name="stuname" id="stuname"/></li>
-                    <li>年龄：<input type="text" name="age" id="age"/></li>
-                    <li>url：<input type="text" name="geninfo-url" id="geninfo-url"/></li>
+                    <li>初潮年龄：<input type="text" name="first_time" id="first_time"/></li>
+                    <li>经期是否规律：<input type="text" name="cyclicity" id="cyclicity"/></li>
+                    <li>月经出血情况：<input type="text" name="blood_cond" id="blood_cond"/></li>
+                    <li>月经出血颜色：<input type="text" name="blood_color" id="blood_color"/></li>
+                    <li>url：<input type="text" name="mensurl" id="mensurl" readonly="true"/></li>
                 </ul>
             </div>
             <div class="modal-footer">
@@ -223,44 +231,58 @@
 <% } %>
 
 <script>
-
     function basicinfo(obj) {
         var geninfourl = $(obj).attr("genurl");
         $.ajax({
             type: "post",
-            url: "/prj/",
+            url: "/prj001/geninfo",
             data: {
                 geninfourl: geninfourl
             },
             dataType: 'json',
             success: function (result) {
                 //alert("Ajax请求结果正确会到这里来处理！")
+                var geninfoobj = JSON.parse(result);
                 //向模态框中传值
-                $('#recordid').val(recordid);
-                $('#stuno').val(stuno);
-                $('#glass').val(glass);
-                $('#stuname').val(name);
+                $('#serial').val(geninfoobj.serial);
+                $('#hospital').val(geninfoobj.hospital);
+                $('#expert').val(geninfoobj.expert);
+                $('#patname').val(geninfoobj.name);
+                $('#age').val(geninfoobj.age);
+                $('#nation').val(geninfoobj.nation);
+                $('#genurl').val(geninfoobj.url);
             },
             error: function(){
                 alert("Ajax请求发生错误会到这里来处理！")
             }
         });
-        //alert('行值' + id);
-        //获取表格中的一行数据
-        var recordid = document.getElementById("table").rows[id].cells[0].innerHTML;
-        var stuno = document.getElementById("table").rows[id].cells[1].innerHTML;
-        var glass = document.getElementById("table").rows[id].cells[2].innerHTML;
-        var name = document.getElementById("table").rows[id].cells[3].innerHTML;
-        var sex = document.getElementById("table").rows[id].cells[4].innerHTML;
-        //向模态框中传值
-        $('#recordid').val(recordid);
-        $('#stuno').val(stuno);
-        $('#glass').val(glass);
-        $('#stuname').val(name);
-        if (sex == '女') {
-            document.getElementById('women').checked = true;
-        } else {
-            document.getElementById('man').checked = true;
+    }
+    function mensinfo(obj) {
+        var mensinfourl = $(obj).attr("mensurl");
+        if (mensinfourl == null) {
+            alert("准备录入月经信息")
+        }else {
+            $.ajax({
+                type: "post",
+                url: "/prj001/mensinfo",
+                data: {
+                    mensinfourl: mensinfourl
+                },
+                dataType: 'json',
+                success: function (result) {
+                    //alert("Ajax请求结果正确会到这里来处理！")
+                    var mensinfoobj = JSON.parse(result);
+                    //向模态框中传值
+                    $('#first_time').val(mensinfoobj.first_time);
+                    $('#cyclicity').val(mensinfoobj.cyclicity);
+                    $('#blood_cond').val(mensinfoobj.blood_cond);
+                    $('#blood_color').val(mensinfoobj.blood_color);
+                    $('#mensurl').val(mensinfoobj.url);
+                },
+                error: function(){
+                    alert("Ajax请求发生错误会到这里来处理！")
+                }
+            });
         }
     }
 </script>
@@ -268,25 +290,29 @@
     function update1() {
         alert('准备更新数据，向后台API接口提交更新请求！');
         //获取模态框数据
-        var recordid = $('#recordid').val();
-        var stuno = $('#stuno').val();
-        var glass = $('#glass').val();
-        var name = $('#stuname').val();
-        var sex = $('input:radio[name="sex"]:checked').val();
-        alert('从模态框提取的数据：\r\nDB_id: ' + recordid + ", 学号: " + stuno + ", 年级: " + glass + ", 姓名: " + name + ", 性别: " + sex);
+        var serial = $('#serial').val();
+        var hospital = $('#hospital').val();
+        var expert = $('#expert').val();
+        var patname = $('#patname').val();
+        var age = $('#age').val();
+        var nation = $('#nation').val();
+        var genurl = $('#genurl').val();
+        alert('从模态框提取的数据：\r\n姓名: "' + patname + ", 年龄: " + age);
         $.ajax({
             type: "post",
-            url: "your-api-update-url",
+            url: "/prj001/geninfo_save",
             data: {
-                stuno: stuno,
-                glass: glass,
-                name: name,
-                sex: sex
+                serial: serial,
+                hospital: hospital,
+                expert: expert,
+                patname: patname,
+                age: age,
+                nation: nation,
+                genurl: genurl
             },
-            dataType: 'html',
-            contentType: "application/x-www-form-urlencoded; charset=utf-8",
+            dataType: 'json',
             success: function (result) {
-                //alert("Ajax请求结果正确会到这里来处理！")
+                alert("Ajax请求结果正确会到这里来处理！"+result)
             },
             error: function(){
                 alert("Ajax请求发生错误会到这里来处理！")

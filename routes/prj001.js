@@ -470,6 +470,112 @@ router.post('/search', function (req, res, next) {
     }
 });
 
+//for ajax request
+router.post('/geninfo', function (req, res, next) {
+    //如果cookie里面有prj001的access_token，那么可以直接获取该项目案例
+    if (req.cookies.prj001token) {
+        //直接发起数据请求，获取prj001项目指定页面的案例
+        var workurl = req.body.geninfourl;
+        var authstring = req.cookies.prj001token.access_token;
+        console.log(">>> current prj001 access_token: " + authstring);
+        console.log(">>> current api url: " + workurl);
+
+        var options = {
+            url: workurl,
+            headers: {
+                'Authorization': 'Bearer ' + authstring
+            }
+        };
+
+        request(options, function (error, response, body) {
+            if (!error && response.statusCode == 200) {
+                res.json(body);
+            }
+            else {
+                console.log(">>>Getting geninfo details met unknown error. " + err.error_description);
+                res.json({error: unknown});
+            }
+        });
+    }
+    //如果cookie里面没有prj001的access_token，那么应该是过期了，需要重新登录
+    else {
+        console.log(">>>Failed to find cookie with prj001 info");
+        res.redirect("login");
+    }
+});
+
+//for ajax request
+router.post('/geninfo_save', function (req, res, next) {
+    //如果cookie里面有prj001的access_token，那么可以直接获取该项目案例
+    if (req.cookies.prj001token) {
+        //直接发起数据请求，获取prj001项目指定页面的案例
+        var workurl = req.body.genurl;
+        var authstring = req.cookies.prj001token.access_token;
+        console.log(">>> current prj001 access_token: " + authstring);
+        console.log(">>> current api url: " + workurl);
+
+        var options = {
+            url: workurl,
+            headers: {
+                'Authorization': 'Bearer ' + authstring
+            },
+            body:{
+                age:req.body.age
+            }
+        };
+
+        request.patch(options, function (error, response, body) {
+            if (!error && response.statusCode == 200) {
+                res.json(body);
+            }
+            else {
+                console.log(">>>Getting geninfo details met unknown error. " + err.error_description);
+                res.json({error: unknown});
+            }
+        });
+    }
+    //如果cookie里面没有prj001的access_token，那么应该是过期了，需要重新登录
+    else {
+        console.log(">>>Failed to find cookie with prj001 info");
+        res.redirect("login");
+    }
+
+});
+
+//for ajax request
+router.post('/mensinfo', function (req, res, next) {
+    //如果cookie里面有prj001的access_token，那么可以直接获取该项目案例
+    if (req.cookies.prj001token) {
+        //直接发起数据请求，获取prj001项目指定页面的案例
+        var workurl = req.body.mensinfourl;
+        var authstring = req.cookies.prj001token.access_token;
+        console.log(">>> current prj001 access_token: " + authstring);
+        console.log(">>> current api url: " + workurl);
+
+        var options = {
+            url: workurl,
+            headers: {
+                'Authorization': 'Bearer ' + authstring
+            }
+        };
+
+        request(options, function (error, response, body) {
+            if (!error && response.statusCode == 200) {
+                res.json(body);
+            }
+            else {
+                console.log(">>>Getting geninfo details met unknown error. " + err.error_description);
+                res.json({error: unknown});
+            }
+        });
+    }
+    //如果cookie里面没有prj001的access_token，那么应该是过期了，需要重新登录
+    else {
+        console.log(">>>Failed to find cookie with prj001 info");
+        res.redirect("login");
+    }
+});
+
 router.post('/file_upload', mutipartMiddeware, function (req, res, next) {
     console.log(req.files);
     /*0|cc       | { image:

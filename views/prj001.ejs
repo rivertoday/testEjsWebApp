@@ -145,6 +145,7 @@
                     基本信息
                 </h4>
             </div>
+            演示系统只更改年龄
             <div class="modal-body">
                 <ul>
                     <li>记录编号：<input type="text" name="serial" id="serial"/></li>
@@ -177,6 +178,7 @@
                     月经信息
                 </h4>
             </div>
+            演示系统只更改初潮年龄
             <div class="modal-body">
                 <ul>
                     <li>初潮年龄：<input type="text" name="first_time" id="first_time"/></li>
@@ -288,7 +290,7 @@
 </script>
 <script>
     function update1() {
-        alert('准备更新数据，向后台API接口提交更新请求！');
+        alert('准备更新基本数据，向后台API接口提交更新请求！');
         //获取模态框数据
         var serial = $('#serial').val();
         var hospital = $('#hospital').val();
@@ -297,7 +299,7 @@
         var age = $('#age').val();
         var nation = $('#nation').val();
         var genurl = $('#genurl').val();
-        alert('从模态框提取的数据：\r\n姓名: "' + patname + ", 年龄: " + age);
+        alert('从模态框提取的数据：\r\n姓名: ' + patname + ", 年龄: " + age);
         $.ajax({
             type: "post",
             url: "/prj001/geninfo_save",
@@ -312,10 +314,55 @@
             },
             dataType: 'json',
             success: function (result) {
-                alert("Ajax请求结果正确会到这里来处理！"+result)
+                if (result.status == 1) {
+                    alert("Ajax请求后台处理正确"+result.result);
+                    window.location.href = '/prj001';
+                }else {
+                    alert("Ajax请求后台处理失败"+result.result);
+                }
             },
-            error: function(){
-                alert("Ajax请求发生错误会到这里来处理！")
+            error: function(err){
+                alert("Ajax请求发生错误会到这里来处理！"+JSON.parse(err));
+            }
+        });
+    }
+
+    function update2() {
+        alert('准备更新月经数据，向后台API接口提交更新请求！');
+        //获取模态框数据
+        var first_time = $('#first_time').val();
+        var cyclicity = $('#cyclicity').val();
+        var blood_cond = $('#blood_cond').val();
+        var blood_color = $('#patname').val();
+        var mensurl = $('#mensurl').val();
+
+        if (mensurl == null) {
+            alert("这是创建月经信息，目前暂不支持！");
+            return;
+        }
+
+        alert('从模态框提取的数据：\r\n初潮年龄: ' + first_time + ", 出血情况: " + blood_cond);
+        $.ajax({
+            type: "post",
+            url: "/prj001/mensinfo_save",
+            data: {
+                first_time: first_time,
+                cyclicity: cyclicity,
+                blood_cond: blood_cond,
+                blood_color: blood_color,
+                mensurl: mensurl
+            },
+            dataType: 'json',
+            success: function (result) {
+                if (result.status == 1) {
+                    alert("Ajax请求后台处理正确"+result.result);
+                    window.location.href = '/prj001';
+                }else {
+                    alert("Ajax请求后台处理失败"+result.result);
+                }
+            },
+            error: function(err){
+                alert("Ajax请求发生错误会到这里来处理！"+JSON.parse(err));
             }
         });
     }

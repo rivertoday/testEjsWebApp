@@ -43,8 +43,13 @@ router.get('/', function (req, res, next) {
         console.log(">>> current prj001 access_token: " + authstring);
         console.log(">>> current built api url: " + workurl);
 
+        var enurl=encodeURI(workurl);
+        var d1url=encodeURI(enurl);
+
+        console.log(">>>d1 encoded api url: " + d1url);
+
         var options = {
-            url: workurl,
+            url: d1url,
             headers: {
                 'Authorization': 'Bearer ' + authstring
             }
@@ -97,7 +102,7 @@ router.get('/', function (req, res, next) {
                     });
                 } else {
                     retschname = params["keyword"];
-                    res.json({
+                    res.render('prj001', {
                         title: '流调项目-排卵障碍性异常子宫出血',
                         archives: archiveobjs.results,
                         totalpagenumber: totalPageNumber,
@@ -109,7 +114,7 @@ router.get('/', function (req, res, next) {
                 }
             }
             else {
-                console.log(">>>Getting archives met unknown error. " + err.error_description);
+                console.log(">>>Getting archives met unknown error. " + error);
                 res.redirect("login");
             }
         });
@@ -164,14 +169,19 @@ router.get('/', function (req, res, next) {
                     console.log(">>> prj001 access_token: " + authstring);
                     console.log(">>> current built api url: " + workurl);
 
+                    var enurl=encodeURI(workurl);
+                    var d2url=encodeURI(enurl);
+
+                    console.log(">>>d2 encoded api url: " + d2url);
+
                     var options = {
-                        url: workurl,
+                        url: d2url,
                         headers: {
                             'Authorization': 'Bearer ' + authstring
                         }
                     };
 
-                    request(options, function (error, response, body) {
+                    request(options, function (err, response, body) {
                         if (!error && response.statusCode == 200) {
                             var archiveobjs = JSON.parse(body);
                             //var totalNumber = archiveobjs.count;
@@ -218,7 +228,7 @@ router.get('/', function (req, res, next) {
                                 });
                             } else {
                                 retschname = params["keyword"];
-                                res.json({
+                                res.render('prj001', {
                                     title: '流调项目-排卵障碍性异常子宫出血',
                                     archives: archiveobjs.results,
                                     totalpagenumber: totalPageNumber,
@@ -230,13 +240,13 @@ router.get('/', function (req, res, next) {
                             }
                         }
                         else {
-                            console.log(">>>Getting archives met unknown error. " + err.error_description);
+                            console.log(">>>Getting archives met unknown error. " + err);
                             res.redirect("login");
                         }
                     });
                 }
                 else {
-                    console.log(">>>Invoking access token met unknown error. " + err.error_description);
+                    console.log(">>>Invoking access token met unknown error. " + error);
                     res.redirect("login");
                 }
             });

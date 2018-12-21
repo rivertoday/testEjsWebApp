@@ -22,8 +22,9 @@
             },
             success: function (data) {
                 alert("Ajax原始返回数据: "+data["title"] +", "+data["curpage"]+ ", "+data["searchname"]);
-                show_archives_detail(data);
-
+                //show_archives_detail(data);
+                var redirurl = '/prj001/?page=' + data["curpage"] + '&keyword='+data["searchname"];
+                window.location.href = redirurl;    //    请求成功后跳转到你的主页
             },
             error: function () {
                 alert("检索失败");
@@ -38,7 +39,7 @@
         for(var i in workdata["archives"]){
             var per_record = workdata["archives"][i];
             //alert(">>>name: "+per_record["name"]);
-            html_code += '<tr><td>'+per_record.name+'</td><td>\'+per_record.age+\'</td><td>'+per_record.url +'</td><tr>';
+            html_code += '<tr><td>'+per_record.name+'</td><td>'+per_record.age+'</td><td>'+per_record.url +'</td><tr>';
         }
         $("#myarchiveslist").append(html_code);
 

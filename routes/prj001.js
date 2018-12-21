@@ -90,7 +90,7 @@ router.get('/', function (req, res, next) {
                 }
                 var retschname = "";
                 if (params["keyword"] == undefined) {
-                    retschname = "患者姓名";
+                    retschname = "";
                     res.render('prj001', {
                         title: '流调项目-排卵障碍性异常子宫出血',
                         archives: archiveobjs.results,
@@ -216,7 +216,7 @@ router.get('/', function (req, res, next) {
                             }
                             var retschname = "";
                             if (params["keyword"] == undefined) {
-                                retschname = "患者姓名";
+                                retschname = "";
                                 res.render('prj001', {
                                     title: '流调项目-排卵障碍性异常子宫出血',
                                     archives: archiveobjs.results,
@@ -260,6 +260,7 @@ router.get('/', function (req, res, next) {
 });
 
 /* Process search request by ajax. */
+/* This function has been deprecated*/
 router.post('/search', function (req, res, next) {
     console.log(">>>Processing search request!");
 
